@@ -1,7 +1,13 @@
+'use client';
+
+import { useState } from 'react';
 import styles from './page.module.css';
 import DomainForm from './components/DomainForm';
+import FeaturedGallery from './components/FeaturedGallery';
 
 export default function Home() {
+  const [selectedDomain, setSelectedDomain] = useState<string>('');
+
   return (
     <main className={styles.main}>
       <div className={styles.hero}>
@@ -13,8 +19,10 @@ export default function Home() {
       </div>
       
       <div className={styles.formContainer}>
-        <DomainForm />
+        <DomainForm prefillDomain={selectedDomain} />
       </div>
+
+      <FeaturedGallery onSelect={setSelectedDomain} />
     </main>
   );
 }

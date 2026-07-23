@@ -12,13 +12,30 @@ type StatusResponse = {
   videoUrl?: string | null;
 };
 
-export default function DomainForm() {
-  const [domain, setDomain] = useState('');
+interface DomainFormProps {
+  prefillDomain?: string;
+}
+
+export default function DomainForm({ prefillDomain }: DomainFormProps) {
+  const [domain, setDomain] = useState(prefillDomain || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [jobState, setJobState] = useState<StatusResponse | null>(null);
   const [isPolling, setIsPolling] = useState(false);
+
+  useEffect(() => {
+    if (prefillDomain) {
+      setDomain(prefillDomain);
+      setJobState({
+        domain: prefillDomain,
+        status: 'pending',
+        totalSnapshots: 0,
+        renderedFrames: 0
+      });
+      setIsPolling(true);
+    }
+  }, [prefillDomain]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

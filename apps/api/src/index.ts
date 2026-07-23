@@ -104,6 +104,20 @@ app.get('/api/domain/:domain/status', async (req: Request, res: Response) => {
   }
 });
 
+app.get('/api/featured', async (req: Request, res: Response) => {
+  try {
+    const featured = await prisma.domain.findMany({
+      where: { status: 'done' },
+      orderBy: { hostname: 'asc' },
+      take: 10
+    });
+    res.json({ domains: featured });
+  } catch (error: any) {
+    console.error(`[API] Error fetching featured domains:`, error);
+    res.status(500).json({ error: 'Failed to fetch featured domains' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`[server]: API running at http://localhost:${port}`);
 });
