@@ -153,7 +153,10 @@ export default function DomainForm({ prefillDomain }: DomainFormProps) {
 
           {jobState.status === 'done' && jobState.videoUrl && (
             <div className={styles.videoContainer}>
-              <VideoPlayer src={`http://localhost:4000${jobState.videoUrl}`} />
+              <VideoPlayer 
+                src={`http://localhost:4000${jobState.videoUrl}`} 
+                domain={jobState.domain}
+              />
             </div>
           )}
         </div>

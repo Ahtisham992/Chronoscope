@@ -17,14 +17,17 @@ export default function FeaturedGallery({ onSelect }: FeaturedGalleryProps) {
   const [featured, setFeatured] = useState<Domain[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/featured')
-      .then(res => res.json())
-      .then(data => {
-        if (data.domains) {
-          setFeatured(data.domains);
-        }
-      })
-      .catch(err => console.error('Failed to fetch featured domains:', err));
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/featured');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.domains) setFeatured(data.domains);
+      } catch (err) {
+        // Silently ignore connection errors during startup race condition
+      }
+    };
+    fetchFeatured();
   }, []);
 
   if (featured.length === 0) return null;

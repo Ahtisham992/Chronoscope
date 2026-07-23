@@ -118,6 +118,24 @@ app.get('/api/featured', async (req: Request, res: Response) => {
   }
 });
 
+import { ExportService } from './exportService';
+
+app.get('/api/export/:domain/:format', async (req: Request, res: Response) => {
+  const { domain, format } = req.params;
+  
+  if (format !== 'mp4' && format !== 'gif') {
+    return res.status(400).json({ error: 'Format must be mp4 or gif' });
+  }
+
+  try {
+    const outputPath = await ExportService.exportMedia(domain, format);
+    res.download(outputPath, `${domain}_timelapse.${format}`);
+  } catch (error: any) {
+    console.error(`[API] Error exporting media for ${domain}:`, error);
+    res.status(500).json({ error: 'Failed to export media' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`[server]: API running at http://localhost:${port}`);
 });

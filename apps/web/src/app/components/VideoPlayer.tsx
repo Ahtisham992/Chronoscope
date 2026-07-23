@@ -5,9 +5,10 @@ import styles from './VideoPlayer.module.css';
 
 interface VideoPlayerProps {
   src: string;
+  domain: string;
 }
 
-export default function VideoPlayer({ src }: VideoPlayerProps) {
+export default function VideoPlayer({ src, domain }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -110,6 +111,20 @@ export default function VideoPlayer({ src }: VideoPlayerProps) {
           
           <div className={styles.timeDisplay}>
             {formatTime(currentTime)} / {formatTime(duration)}
+          </div>
+          <div className={styles.exportControls}>
+            <button 
+              className={styles.exportBtn}
+              onClick={() => window.location.href = `http://localhost:4000/api/export/${domain}/mp4`}
+            >
+              Export MP4
+            </button>
+            <button 
+              className={styles.exportBtn}
+              onClick={() => window.location.href = `http://localhost:4000/api/export/${domain}/gif`}
+            >
+              Export GIF
+            </button>
           </div>
         </div>
       </div>
