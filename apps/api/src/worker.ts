@@ -40,9 +40,21 @@ const worker = new Worker<RenderJobData>(
       return;
     }
 
-    // 2. Sample snapshots (limit to 5 for Phase 8)
-    const sampled = snapshots.slice(0, 5);
-    console.log(`[Worker] Sampled ${sampled.length} snapshots for rendering.`);
+    // 2. Smart Sampling Algorithm: One snapshot per year
+    const byYear = new Map<string, typeof snapshots[0]>();
+    for (const snap of snapshots) {
+      const year = snap.timestamp.substring(0, 4);
+      if (!byYear.has(year)) {
+        byYear.set(year, snap);
+      }
+    }
+    
+    // Convert back to array, sort by year, and limit to max 30 frames for performance
+    const sampled = Array.from(byYear.values())
+      .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+      .slice(-30);
+
+    console.log(`[Worker] Smart Sampled ${sampled.length} snapshots (1 per year) for rendering.`);
 
     // 3. Launch Playwright
     const browser = await chromium.launch({ headless: true });
@@ -50,47 +62,46 @@ const worker = new Worker<RenderJobData>(
       viewport: { width: 1280, height: 800 },
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     });
-    const page = await context.newPage();
 
     const outDir = path.join(process.cwd(), 'screenshots');
     if (!fs.existsSync(outDir)) {
       fs.mkdirSync(outDir);
     }
 
-    // 4. Iterate and render
-    for (const snapshot of sampled) {
-      const { timestamp } = snapshot;
-      const url = `http://web.archive.org/web/${timestamp}id_/${domain.startsWith('http') ? domain : `http://${domain}`}`;
-      const outPath = path.join(outDir, `${domain.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.png`);
+    // 4. Parallel Rendering (Chunks of 5)
+    const chunkSize = 5;
+    for (let i = 0; i < sampled.length; i += chunkSize) {
+      const chunk = sampled.slice(i, i + chunkSize);
       
-      console.log(`[Worker] Rendering ${domain} at ${timestamp}...`);
+      await Promise.all(chunk.map(async (snapshot) => {
+        const { timestamp } = snapshot;
+        const page = await context.newPage();
+        const url = `http://web.archive.org/web/${timestamp}id_/${domain.startsWith('http') ? domain : `http://${domain}`}`;
+        const outPath = path.join(outDir, `${domain.replace(/[^a-z0-9]/gi, '_')}_${timestamp}.png`);
+        
+        console.log(`[Worker] Rendering ${domain} at ${timestamp}...`);
 
-      try {
-        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-      } catch (error: any) {
-        console.warn(`[Worker] Page load warning for ${timestamp}: ${error.message}`);
-      }
-
-      await page.waitForTimeout(2000);
-      await page.screenshot({ path: outPath, fullPage: false });
-
-      // Insert Frame record into DB
-      await prisma.frame.upsert({
-        where: {
-          domain_timestamp: {
-            domain,
-            timestamp
-          }
-        },
-        update: { filePath: outPath },
-        create: {
-          domain,
-          timestamp,
-          filePath: outPath
+        try {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        } catch (error: any) {
+          console.warn(`[Worker] Page load warning for ${timestamp}: ${error.message}`);
         }
-      });
-      
-      console.log(`[Worker] Saved frame to DB and disk: ${outPath}`);
+
+        await page.waitForTimeout(2000);
+        await page.screenshot({ path: outPath, fullPage: false });
+        await page.close();
+
+        // Insert Frame record into DB
+        await prisma.frame.upsert({
+          where: {
+            domain_timestamp: { domain, timestamp }
+          },
+          update: { filePath: outPath },
+          create: { domain, timestamp, filePath: outPath }
+        });
+        
+        console.log(`[Worker] Saved frame to DB and disk: ${outPath}`);
+      }));
     }
 
     await browser.close();

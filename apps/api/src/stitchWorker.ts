@@ -64,16 +64,17 @@ const stitchWorker = new Worker<StitchJobData>(
 
     const outputPath = path.join(videoDir, `${domain}.mp4`);
 
-    await new Promise<void>((resolve, reject) => {
-      ffmpeg()
-        .input(concatPath)
+    await new Promise((resolve, reject) => {
+      ffmpeg(concatPath)
         .inputOptions(['-f concat', '-safe 0'])
-        .videoCodec('libx264')
+        .videoCodec('h264_nvenc')
         .outputOptions([
           '-pix_fmt yuv420p',
-          '-vf minterpolate=fps=30:mi_mode=blend',
+          '-preset p4', // Optimized fast preset for NVENC
           '-r 30'
         ])
+        .on('start', (cmd) => console.log(`[StitchWorker] Spawned FFmpeg: ${cmd}`))
+        .on('progress', (p) => console.log(`[StitchWorker] Processing: ${p.percent}% done`))
         .on('end', () => resolve())
         .on('error', (err) => reject(err))
         .save(outputPath);

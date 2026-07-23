@@ -36,9 +36,13 @@ export class ExportService {
 
       if (format === 'mp4') {
         command
-          .videoCodec('libx264')
+          .videoCodec('h264_nvenc')
           .videoFilter(filterGraph)
-          .outputOptions(['-pix_fmt yuv420p', '-movflags +faststart']);
+          .outputOptions([
+            '-pix_fmt yuv420p',
+            '-preset p4',
+            '-movflags +faststart'
+          ]);
       } else if (format === 'gif') {
         // For GIF, we scale down to 800px width for file size, apply pad/text, then generate palette and map
         filterGraph = `scale=800:-1,pad=width=iw:height=ih+50:x=0:y=0:color=black,drawtext=fontfile=${fontfile}:text='${attributionText}':fontcolor=white:fontsize=16:x=(w-text_w)/2:y=h-35`;
