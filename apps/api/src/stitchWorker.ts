@@ -64,7 +64,7 @@ const stitchWorker = new Worker<StitchJobData>(
 
     const outputPath = path.join(videoDir, `${domain}.mp4`);
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       ffmpeg(concatPath)
         .inputOptions(['-f concat', '-safe 0'])
         .videoCodec('h264_nvenc')
