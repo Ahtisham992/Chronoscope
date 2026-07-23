@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Domain {
+  id            String     @id @default(uuid())
+  hostname      String     @unique
+  status        String     @default("pending") // "pending", "rendering", "done", "failed"
+  lastCdxFetch  DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  snapshots     Snapshot[]
+
+  @@index([status])
+}
+
+model Frame {
+  id        String   @id @default(uuid())
+  domain    String
+  timestamp String
+  filePath  String
+  createdAt DateTime @default(now())
+
+  @@unique([domain, timestamp])
+}
+
+model Snapshot {
+  id          String   @id @default(uuid())
+  domainId    String
+  domain      Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  timestamp   String
+  originalUrl String
+  digest      String
+  
+  status      String   @default("PENDING")
+  frameUrl    String?
+  
+  @@unique([domainId, timestamp])
+  @@index([domainId])
+}
