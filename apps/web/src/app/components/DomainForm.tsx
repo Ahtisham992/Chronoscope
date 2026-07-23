@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './DomainForm.module.css';
+import VideoPlayer from './VideoPlayer';
 
 type StatusResponse = {
   domain: string;
@@ -135,14 +136,7 @@ export default function DomainForm() {
 
           {jobState.status === 'done' && jobState.videoUrl && (
             <div className={styles.videoContainer}>
-              <video 
-                className={styles.video} 
-                src={`http://localhost:4000${jobState.videoUrl}`} 
-                controls 
-                autoPlay 
-                loop 
-                playsInline
-              />
+              <VideoPlayer src={`http://localhost:4000${jobState.videoUrl}`} />
             </div>
           )}
         </div>
