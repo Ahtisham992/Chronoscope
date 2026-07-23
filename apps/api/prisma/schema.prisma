@@ -9,7 +9,7 @@ datasource db {
 model Domain {
   id            String     @id @default(uuid())
   hostname      String     @unique
-  status        String     @default("pending") // "pending", "rendering", "done", "failed"
+  status        String     @default("pending") // "pending", "rendering", "stitching", "done", "failed"
   lastCdxFetch  DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

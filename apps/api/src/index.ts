@@ -15,6 +15,10 @@ const app = express();
 app.use(cors());
 const port = process.env.PORT || 4000;
 
+import path from 'path';
+// Serve the videos directory statically
+app.use('/videos', express.static(path.join(process.cwd(), 'videos')));
+
 app.get('/', (req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'chronoscope-api' });
 });
@@ -91,7 +95,8 @@ app.get('/api/domain/:domain/status', async (req: Request, res: Response) => {
       domain: domainHostname,
       status: domain.status,
       totalSnapshots,
-      renderedFrames
+      renderedFrames,
+      videoUrl: domain.status === 'done' ? `/videos/${domainHostname}.mp4` : null
     });
   } catch (error: any) {
     console.error(`[API] Error fetching status for ${domainHostname}:`, error);

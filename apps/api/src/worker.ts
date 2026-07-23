@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { Worker, Job, ConnectionOptions } from 'bullmq';
 import { RenderJobData } from './queue/renderQueue';
+import { stitchQueue } from './queue/stitchQueue';
 import { DomainService } from './cdx/service';
 import { chromium } from 'playwright';
 import path from 'path';
@@ -94,13 +95,15 @@ const worker = new Worker<RenderJobData>(
 
     await browser.close();
 
-    // Set domain status to done
+    // Set domain status to stitching and enqueue stitch job
     await prisma.domain.update({
       where: { hostname: domain },
-      data: { status: 'done' }
+      data: { status: 'stitching' }
     });
 
-    console.log(`[Worker] Finished job ${job.id} for domain: ${domain}`);
+    await stitchQueue.add('stitch-video', { domain });
+    
+    console.log(`[Worker] Finished render job ${job.id} for domain: ${domain}. Enqueued stitch job.`);
   },
   { connection }
 );
