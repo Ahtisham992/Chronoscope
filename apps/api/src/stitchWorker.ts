@@ -6,9 +6,6 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import path from 'path';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
-
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const connection: ConnectionOptions = {
   host: process.env.REDIS_HOST || '127.0.0.1',
