@@ -85,9 +85,12 @@ const stitchWorker = new Worker<StitchJobData>(
       data: { status: 'done' }
     });
     
-    console.log(`[StitchWorker] Finished job ${job.id} for domain: ${domain}. Video ready!`);
+    console.log(`[StitchWorker] Finished job ${job.id} for domain: ${domain}`);
   },
-  { connection }
+  { 
+    connection,
+    concurrency: 2
+  }
 );
 
 stitchWorker.on('failed', async (job, err) => {

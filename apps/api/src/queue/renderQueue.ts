@@ -9,4 +9,14 @@ export interface RenderJobData {
   domain: string;
 }
 
-export const renderQueue = new Queue<RenderJobData>('render-queue', { connection });
+export const renderQueue = new Queue<RenderJobData>('render-queue', { 
+  connection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: true,
+  }
+});

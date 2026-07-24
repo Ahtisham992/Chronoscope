@@ -68,8 +68,8 @@ const worker = new Worker<RenderJobData>(
       fs.mkdirSync(outDir);
     }
 
-    // 4. Parallel Rendering (Chunks of 5)
-    const chunkSize = 5;
+    // 4. Parallel Rendering (Chunks of 3)
+    const chunkSize = 3;
     for (let i = 0; i < sampled.length; i += chunkSize) {
       const chunk = sampled.slice(i, i + chunkSize);
       
@@ -116,7 +116,10 @@ const worker = new Worker<RenderJobData>(
     
     console.log(`[Worker] Finished render job ${job.id} for domain: ${domain}. Enqueued stitch job.`);
   },
-  { connection }
+  { 
+    connection,
+    concurrency: 2 
+  }
 );
 
 worker.on('failed', async (job, err) => {
