@@ -166,6 +166,9 @@ export default function DualVideoPlayer({ src1, src2, domain1, domain2 }: DualVi
           <div className={styles.timeDisplay} aria-hidden="true">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
+          <div className={styles.attribution}>
+            Historical data via the Internet Archive's Wayback Machine.
+          </div>
         </div>
       </div>
     </div>

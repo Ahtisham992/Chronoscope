@@ -7,6 +7,8 @@ import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 
+import { isBlocked } from './blocklist';
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -28,6 +30,10 @@ app.get('/api/domain/:domain/snapshots', async (req: Request, res: Response) => 
   
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required' });
+  }
+
+  if (isBlocked(domain)) {
+    return res.status(403).json({ error: 'Domain is blocked due to content safety or takedown rules.' });
   }
 
   try {
@@ -52,6 +58,10 @@ app.post('/api/domain/:domain/render', async (req: Request, res: Response) => {
   
   if (!domain) {
     return res.status(400).json({ error: 'Domain is required' });
+  }
+
+  if (isBlocked(domain)) {
+    return res.status(403).json({ error: 'Domain is blocked due to content safety or takedown rules.' });
   }
 
   try {

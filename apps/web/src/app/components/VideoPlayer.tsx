@@ -140,6 +140,9 @@ export default function VideoPlayer({ src, domain }: VideoPlayerProps) {
           <div className={styles.timeDisplay} aria-hidden="true">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
+          <div className={styles.attribution}>
+            Historical data via the Internet Archive's Wayback Machine.
+          </div>
           <div className={styles.exportControls}>
             <button 
               className={styles.exportBtn}
